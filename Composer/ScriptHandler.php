@@ -18,7 +18,7 @@ class ScriptHandler
         $cmanager = new ComposerPathFinder($composer);
         $options = array(
             'targetSuffix' => self::getTargetSuffix(),
-            'sourcePrefix' => '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR
+            'sourcePrefix' => '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR
         );
         list($symlinkTarget, $symlinkName) = $cmanager->getSymlinkFromComposer(
             TinymceSymlinkCommand::$stfalconTinymceBundleName,
