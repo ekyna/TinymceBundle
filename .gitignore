@@ -1,3 +1,7 @@
+# Project #
+###########
+/Resources/public/vendor/tinymce
+
 # Composer #
 ############
 /composer.lock
