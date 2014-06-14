@@ -120,7 +120,7 @@ php app/console stfalcon:tinymce:symlink <comment>--manual</comment> <pathToTiny
 
 Defaults if installed by composer would be :
 
-pathToTinymce:    ../../../../../../vendor/tinymce/tinymce
+pathToTinymce:    ../../../../../../../../vendor/tinymce/tinymce
 pathToStfalconTinymceBundle: vendor/stfalcon/tinymce-bundle/Stfalcon/Bundle/TinymceBundle/Resources/public/vendor/tinymce
 
 EOT
