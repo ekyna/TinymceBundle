@@ -1,7 +1,3 @@
-# Project #
-###########
-Resources/public/vendor
-
 # Composer #
 ############
 /composer.lock
