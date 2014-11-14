@@ -83,7 +83,7 @@ class StfalconTinymceExtension extends \Twig_Extension
         $config = $this->getParameter('stfalcon_tinymce.config');
         $config = array_merge_recursive($config, $options);
 
-        $this->baseUrl = (!isset($config['base_url']) ? null : $config['base_url']);
+        $this->baseUrl = (!isset($config['base_url']) ? null : rtrim($config['base_url'], '/'));
         /** @var $assets \Symfony\Component\Templating\Helper\CoreAssetsHelper */
         $assets = $this->getService('templating.helper.assets');
 
@@ -141,22 +141,19 @@ class StfalconTinymceExtension extends \Twig_Extension
             $config['language_url'] = $languageUrl;
         }
 
-        if (isset($config['theme']) && $config['theme'])
-        {
+        if (isset($config['theme']) && $config['theme']) {
             // Parse the content_css of each theme so we can use 'asset[path/to/asset]' in there
             foreach ($config['theme'] as $themeName => $themeOptions) {
-                if(isset($themeOptions['content_css']))
-                {
+                if (isset($themeOptions['content_css'])) {
                     // As there may be multiple CSS Files specified we need to parse each of them individually
-                    $cssFiles = explode(',', $themeOptions['content_css']);
-
-                    foreach($cssFiles as $idx => $file)
-                    {
-                        $cssFiles[$idx] = $this->getAssetsUrl(trim($file)); // we trim to be sure we get the file without spaces.
+                    $cssFiles = is_array($themeOptions['content_css'])
+                        ? $themeOptions['content_css']
+                        : explode(',', $themeOptions['content_css']);
+                    foreach ($cssFiles as $idx => $file) {
+                        // we trim to be sure we get the file without spaces.
+                        $cssFiles[$idx] = $this->getAssetsUrl(trim($file));
                     }
-
-                    // After parsing we add them together again.
-                    $config['theme'][$themeName]['content_css'] = implode(',', $cssFiles);
+                    $config['theme'][$themeName]['content_css'] = array_values($cssFiles);
                 }
             }
         }
@@ -168,7 +165,8 @@ class StfalconTinymceExtension extends \Twig_Extension
             ),
             'include_jquery' => $config['include_jquery'],
             'tinymce_jquery' => $config['tinymce_jquery'],
-            'base_url'       => $this->baseUrl
+            'base_url'       => $this->baseUrl,
+            'tinymce_url'    => trim($config['tinymce_url'], '/'),
         ));
     }
 

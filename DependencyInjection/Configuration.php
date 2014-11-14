@@ -10,6 +10,15 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
+    /** @var string */
+    const DEFAULT_TINYMCE_SOURCE_DIR = '%kernel.root_dir%/../vendor/tinymce/tinymce';
+
+    /** @var string */
+    const DEFAULT_TINYMCE_TARGET_DIR = '%kernel.root_dir%/../web/js/tinymce';
+
+    /** @var string */
+    const DEFAULT_TINYMCE_URL = '/js/tinymce';
+
     /**
      * Generates the configuration tree.
      *
@@ -24,6 +33,10 @@ class Configuration implements ConfigurationInterface
         return $treeBuilder
             ->root('stfalcon_tinymce', 'array')
                 ->children()
+                    // Set tinymce source dir
+                    ->scalarNode('tinymce_source_dir')->defaultValue(self::DEFAULT_TINYMCE_SOURCE_DIR)->end()
+                    // Set tinymce target dir
+                    ->scalarNode('tinymce_target_dir')->defaultValue(self::DEFAULT_TINYMCE_TARGET_DIR)->end()
                     // Include jQuery (true) library or not (false)
                     ->booleanNode('include_jquery')->defaultFalse()->end()
                     // Use jQuery (true) or standalone (false) build of the TinyMCE
@@ -34,6 +47,8 @@ class Configuration implements ConfigurationInterface
                     ->scalarNode('selector')->defaultValue('.tinymce')->end()
                     // base url for content
                     ->scalarNode('base_url')->end()
+                    // base url for content
+                    ->scalarNode('tinymce_url')->defaultValue(self::DEFAULT_TINYMCE_URL)->end()
                     // Default language for all instances of the editor
                     ->scalarNode('language')->defaultNull()->end()
                     ->arrayNode('theme')

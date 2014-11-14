@@ -2,63 +2,85 @@
 
 namespace Stfalcon\Bundle\TinymceBundle\Composer;
 
-use Composer\Script\Event;
-use Mopa\Bridge\Composer\Util\ComposerPathFinder;
-use Stfalcon\Bundle\TinymceBundle\Command\TinymceSymlinkCommand;
+use Symfony\Component\Process\Process;
+use Symfony\Component\Process\PhpExecutableFinder;
+use Composer\Script\CommandEvent;
 
 /**
- * Script for Composer, create symlink to tinymce lib into the TinymceBundle.
+ * Class ScriptHandler
+ * @package Stfalcon\Bundle\TinymceBundle\Composer
+ * @author Étienne Dauvergne <contact@ekyna.com>
  */
 class ScriptHandler
 {
-    public static function postInstallSymlinkTinymce(Event $event)
+    /**
+     * @param CommandEvent $event
+     */
+    public static function install(CommandEvent $event)
     {
-        $IO = $event->getIO();
-        $composer = $event->getComposer();
-        $cmanager = new ComposerPathFinder($composer);
-        $options = array(
-            'targetSuffix' => self::getTargetSuffix(),
-            'sourcePrefix' => '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR
-        );
-        list($symlinkTarget, $symlinkName) = $cmanager->getSymlinkFromComposer(
-            TinymceSymlinkCommand::$stfalconTinymceBundleName,
-            TinymceSymlinkCommand::$tinymceName,
-            $options
-        );
+        $options = self::getOptions($event);
+        $consolePathOptionsKey = array_key_exists('symfony-bin-dir', $options) ? 'symfony-bin-dir' : 'symfony-app-dir';
+        $consolePath = $options[$consolePathOptionsKey];
 
-        $IO->write("Checking Symlink", FALSE);
-        if (false === TinymceSymlinkCommand::checkSymlink($symlinkTarget, $symlinkName, true)) {
-            $IO->write("Creating Symlink: " . $symlinkName, FALSE);
-            TinymceSymlinkCommand::createSymlink($symlinkTarget, $symlinkName);
+        if (!is_dir($consolePath)) {
+            printf(
+                'The %s (%s) specified in composer.json was not found in %s, can not build bootstrap '.
+                'file.%s',
+                $consolePathOptionsKey,
+                $consolePath,
+                getcwd(),
+                PHP_EOL
+            );
+
+            return;
         }
-        $IO->write(" ... <info>OK</info>");
+
+        static::executeCommand($event, $consolePath, 'stfalcon:tinymce:install', $options['process-timeout']);
     }
 
-    public static function postInstallMirrorTinymce(Event $event)
+    protected static function executeCommand(CommandEvent $event, $consolePath, $cmd, $timeout = 300)
     {
-        $IO = $event->getIO();
-        $composer = $event->getComposer();
-        $cmanager = new ComposerPathFinder($composer);
-        $options = array(
-            'targetSuffix' =>  self::getTargetSuffix(),
-            'sourcePrefix' => '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR
-        );
-        list($symlinkTarget, $symlinkName) = $cmanager->getSymlinkFromComposer(
-            TinymceSymlinkCommand::$stfalconTinymceBundleName,
-            TinymceSymlinkCommand::$tinymceName,
-            $options
-        );
-
-        $IO->write("Checking Mirror", FALSE);
-        if (false === TinymceSymlinkCommand::checkSymlink($symlinkTarget, $symlinkName)) {
-            $IO->write("Creating Mirror: " . $symlinkName, FALSE);
-            TinymceSymlinkCommand::createMirror($symlinkTarget, $symlinkName);
+        $php = escapeshellarg(self::getPhp());
+        $console = escapeshellarg($consolePath.'/console');
+        if ($event->getIO()->isDecorated()) {
+            $console .= ' --ansi';
         }
-        $IO->write(" ... <info>OK</info>");
+
+        $process = new Process($php.' '.$console.' '.$cmd, null, null, null, $timeout);
+        $process->run(function ($type, $buffer) {
+            echo $buffer;
+        });
+        if (!$process->isSuccessful()) {
+            throw new \RuntimeException(
+                sprintf('An error occurred when executing the "%s" command.', escapeshellarg($cmd))
+            );
+        }
     }
 
-    protected static function getTargetSuffix($end = "")
+    protected static function getOptions(CommandEvent $event)
     {
-        return DIRECTORY_SEPARATOR . "Resources" . DIRECTORY_SEPARATOR . "public" . DIRECTORY_SEPARATOR . "vendor". DIRECTORY_SEPARATOR . "tinymce" . $end;
+        $options = array_merge(array(
+            'symfony-app-dir' => 'app',
+            'symfony-web-dir' => 'web',
+            'symfony-assets-install' => 'hard'
+        ), $event->getComposer()->getPackage()->getExtra());
+
+        $options['symfony-assets-install'] = getenv('SYMFONY_ASSETS_INSTALL') ?: $options['symfony-assets-install'];
+
+        $options['process-timeout'] = $event->getComposer()->getConfig()->get('process-timeout');
+
+        return $options;
+    }
+
+    protected static function getPhp()
+    {
+        $phpFinder = new PhpExecutableFinder;
+        if (!$phpPath = $phpFinder->find()) {
+            throw new \RuntimeException(
+                'The php executable could not be found, add it to your PATH environment variable and try again'
+            );
+        }
+
+        return $phpPath;
     }
 }

@@ -37,6 +37,12 @@ class StfalconTinymceExtension extends Extension
             }
         }
 
+        // Install command directories
+        $container->setParameter('stfalcon_tinymce.tinymce_source_dir', $config['tinymce_source_dir']);
+        unset($config['tinymce_source_dir']);
+        $container->setParameter('stfalcon_tinymce.tinymce_target_dir', $config['tinymce_target_dir']);
+        unset($config['tinymce_target_dir']);
+
         $container->setParameter('stfalcon_tinymce.config', $config);
 
         // load dependency injection config
