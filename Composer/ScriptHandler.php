@@ -24,8 +24,7 @@ class ScriptHandler
 
         if (!is_dir($consolePath)) {
             printf(
-                'The %s (%s) specified in composer.json was not found in %s, can not build bootstrap '.
-                'file.%s',
+                'The %s (%s) specified in composer.json was not found in %s, can not install tinymce.%s',
                 $consolePathOptionsKey,
                 $consolePath,
                 getcwd(),

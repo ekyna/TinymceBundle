@@ -30,7 +30,6 @@ class LocaleHelper
      */
     public static function getLanguage($locale)
     {
-
         return isset(self::$locales[$locale])
             ? self::$locales[$locale]
             : $locale;

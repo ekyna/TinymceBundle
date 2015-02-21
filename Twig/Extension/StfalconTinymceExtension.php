@@ -68,31 +68,24 @@ class StfalconTinymceExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            'tinymce_init' => new \Twig_Function_Method($this, 'tinymceInit', array('is_safe' => array('html')))
+            'tinymce_init' => new \Twig_Function_Method($this, 'tinymceInit', array('is_safe' => array('html'))),
+            'get_tinymce_config' => new \Twig_Function_Method($this, 'getTinymceConfig'),
         );
     }
 
     /**
-     * TinyMce initializations
+     * Returns the tinymce configuration.
      *
      * @param array $options
-     * @return string
+     * @param bool $jsonEncode
+     * @return array|string
      */
-    public function tinymceInit($options = array())
+    public function getTinymceConfig($options = array(), $theme = null, $jsonEncode = true)
     {
         $config = $this->getParameter('stfalcon_tinymce.config');
         $config = array_merge_recursive($config, $options);
 
         $this->baseUrl = (!isset($config['base_url']) ? null : rtrim($config['base_url'], '/'));
-        /** @var $assets \Symfony\Component\Templating\Helper\CoreAssetsHelper */
-        $assets = $this->getService('templating.helper.assets');
-
-        // Get path to tinymce script for the jQuery version of the editor
-        if ($config['tinymce_jquery']) {
-            $config['jquery_script_url'] = $assets->getUrl(
-                $this->baseUrl . 'bundles/stfalcontinymce/vendor/tinymce/tinymce.jquery.min.js'
-            );
-        }
 
         // Get local button's image
         foreach ($config['tinymce_buttons'] as &$customButton) {
@@ -122,7 +115,7 @@ class StfalconTinymceExtension extends \Twig_Extension
 
         $config['language'] = LocaleHelper::getLanguage($config['language']);
 
-        $langDirectory = __DIR__ . '/../../Resources/public/vendor/tinymce/langs/';
+        $langDirectory = __DIR__ . '/../../Resources/public/vendor/tinymce-langs/';
 
         // A language code coming from the locale may not match an existing language file
         if (!file_exists($langDirectory . $config['language'] . '.js')) {
@@ -130,8 +123,8 @@ class StfalconTinymceExtension extends \Twig_Extension
         }
 
         if (isset($config['language']) && $config['language']) {
-            $languageUrl = $assets->getUrl(
-                $this->baseUrl . 'bundles/stfalcontinymce/vendor/tinymce-langs/' . $config['language'] . '.js'
+            $languageUrl = $this->getAssetsUrl(
+                '/bundles/stfalcontinymce/vendor/tinymce-langs/' . $config['language'] . '.js'
             );
             // TinyMCE does not allow to set different languages to each instance
             foreach ($config['theme'] as $themeName => $themeOptions) {
@@ -156,6 +149,37 @@ class StfalconTinymceExtension extends \Twig_Extension
                     $config['theme'][$themeName]['content_css'] = array_values($cssFiles);
                 }
             }
+        }
+
+        if (0 < strlen($theme) && array_key_exists($theme, $config['theme'])) {
+            $config = $config['theme'][$theme];
+        }
+
+        if ($jsonEncode) {
+            $config = preg_replace(
+                '/"file_browser_callback":"([^"]+)"\s*/', 'file_browser_callback:$1',
+                json_encode($config)
+            );
+        }
+
+        return $config;
+    }
+
+    /**
+     * TinyMce initializations
+     *
+     * @param array $options
+     * @return string
+     */
+    public function tinymceInit($options = array())
+    {
+        $config = $this->getTinymceConfig($options, null, false);
+
+        // Get path to tinymce script for the jQuery version of the editor
+        if ($config['tinymce_jquery']) {
+            $config['jquery_script_url'] = $this->getAssetsUrl(
+                '/bundles/stfalcontinymce/vendor/tinymce/tinymce.jquery.min.js'
+            );
         }
 
         return $this->getService('templating')->render('StfalconTinymceBundle:Script:init.html.twig', array(
@@ -200,33 +224,4 @@ class StfalconTinymceExtension extends \Twig_Extension
 
         return $inputUrl;
     }
-
-    /**
-     * Expands a short locale to a long one
-     *
-     * @param string $locale
-     * @return string
-     */
-    protected function expandLocale($locale)
-    {
-        $conversion = array(
-            'bn' => 'bn_BD',
-            'en' => 'en_GB',
-            'he' => 'he_IL',
-            'ka' => 'ka_GE',
-            'km' => 'km_KH',
-            'ko' => 'ko_KR',
-            'nb' => 'nb_NO',
-            'si' => 'si_LK',
-            'sl' => 'sl_SI',
-            'sv' => 'sv_SE',
-            'zh' => 'zh_CN',
-        );
-        if (array_key_exists($locale, $conversion)) {
-            return $conversion[$locale];
-        }
-
-        return $locale;
-    }
 }
-
