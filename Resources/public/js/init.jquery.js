@@ -27,6 +27,10 @@ function initTinyMCE(options) {
                 if (textarea.is('[required]')) {
                     textarea.prop('required', false);
                 }
+                // Overwrite with data-config
+                // TODO browser compatibility (json_encode / attribute double quote)
+                settings = $.extend(settings, textarea.data('config'));
+                // Setup
                 settings.setup = function(ed) {
                     // Add custom buttons to current editor
                     $.each(options.tinymce_buttons || {}, function(id, opts) {
