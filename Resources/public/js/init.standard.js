@@ -58,6 +58,11 @@ function initTinyMCE(options) {
             for (var p = 0; p < externalPlugins.length; p++) {
                 settings.external_plugins[externalPlugins[p]['id']] = externalPlugins[p]['url'];
             }
+
+            // Overwrite config through data-config attribute
+            var overwrite = JSON.parse(textareas[i].getAttribute("data-config")) || {};
+            for (var key in overwrite) { settings[key] = overwrite[key]; }
+
             // workaround for an incompatibility with html5-validation
             if (textareas[i].getAttribute("required") !== '') {
                 textareas[i].removeAttribute("required")

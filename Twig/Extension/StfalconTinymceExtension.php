@@ -178,7 +178,7 @@ class StfalconTinymceExtension extends \Twig_Extension
         // Get path to tinymce script for the jQuery version of the editor
         if ($config['tinymce_jquery']) {
             $config['jquery_script_url'] = $this->getAssetsUrl(
-                '/bundles/stfalcontinymce/vendor/tinymce/tinymce.jquery.min.js'
+                '/js/tinymce/jquery.tinymce.min.js'
             );
         }
 
