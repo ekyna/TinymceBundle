@@ -5,14 +5,24 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <parameters>
+        <parameter key="stfalcon_tinymce.tinymce.form_type.class">Stfalcon\Bundle\TinymceBundle\Form\Type\TinymceType</parameter>
         <parameter key="stfalcon_tinymce.twig.extension.class">Stfalcon\Bundle\TinymceBundle\Twig\Extension\StfalconTinymceExtension</parameter>
     </parameters>
 
     <services>
-        <!-- T W I G   H E L P E R S -->
+
+        <!-- Form Type -->
+        <service id="stfalcon_tinymce.tinymce.form_type" class="%stfalcon_tinymce.tinymce.form_type.class%">
+            <argument>%stfalcon_tinymce.themes%</argument>
+            <tag name="form.type" alias="tinymce" />
+        </service>
+
+        <!-- Twig extension -->
         <service id="twig.extension.stfalcon_tinymce" class="%stfalcon_tinymce.twig.extension.class%">
             <argument type="service" id="service_container" />
             <tag name="twig.extension" alias="stfalcon_tinymce" />
         </service>
+
     </services>
+
 </container>

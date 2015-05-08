@@ -44,6 +44,7 @@ class StfalconTinymceExtension extends Extension
         unset($config['tinymce_target_dir']);
 
         $container->setParameter('stfalcon_tinymce.config', $config);
+        $container->setParameter('stfalcon_tinymce.themes', array_keys($config['theme']));
 
         // load dependency injection config
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
