@@ -15,6 +15,7 @@
         <service id="stfalcon_tinymce.tinymce.form_type" class="%stfalcon_tinymce.tinymce.form_type.class%">
             <argument>%stfalcon_tinymce.themes%</argument>
             <tag name="form.type" alias="tinymce" />
+            <tag name="form.js" selector=".tinymce" path="stfalcon/tinymce" />
         </service>
 
         <!-- Twig extension -->

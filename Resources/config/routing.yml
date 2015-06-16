@@ -1,0 +1,4 @@
+stfalcon_tinymce_config:
+    path: /js/tinymce-config.json
+    defaults:
+        _controller: StfalconTinymceBundle:Tinymce:config

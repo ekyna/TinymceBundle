@@ -1,0 +1,12 @@
+config:
+    shim:
+        'stfalcon/tinymce':
+            deps: ['jquery', 'json!tinymce_config', 'tinymce']
+    paths:
+        'tinymce_config':
+            route: stfalcon_tinymce_config
+        'tinymce': 'assets/tinymce/tinymce.min'
+        'stfalcon/tinymce': 'bundles/stfalcontinymce/js/tinymce'
+build:
+    paths:
+        'tinymce_config': 'empty:'
