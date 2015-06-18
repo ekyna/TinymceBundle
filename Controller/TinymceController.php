@@ -37,7 +37,8 @@ class TinymceController extends Controller
 
         $response
             ->setPublic()
-            ->setMaxAge(3600)
+            ->setMaxAge(3600*6)
+            ->setSharedMaxAge(3600*6)
         ;
 
         return $response;

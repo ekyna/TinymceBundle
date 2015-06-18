@@ -1,5 +1,21 @@
-define('stfalcon/tinymce', ['jquery', 'json!tinymce_config', 'tinymce'], function($, config) {
+(function(root, factory) {
     "use strict";
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = factory(require('jquery')); // TODO
+    }
+    else if (typeof define === 'function' && define.amd) {
+        define('stfalcon/tinymce', ['jquery', 'json!tinymce_config', 'tinymce'], function($, config) {
+            return factory($, config);
+        });
+    } else {
+        root.StfalconTinymce = factory(root.jQuery); // TODO
+    }
+}(this, function($, config) {
+    "use strict";
+
+    if (typeof tinymce == 'undefined') {
+        throw 'Tinymce is not available.';
+    }
 
     tinymce.baseURL = config.tinymce_url;
     tinymce.suffix = '.min';
@@ -102,4 +118,4 @@ define('stfalcon/tinymce', ['jquery', 'json!tinymce_config', 'tinymce'], functio
             $element.tinymceWidget();
         }
     };
-});
+}));
