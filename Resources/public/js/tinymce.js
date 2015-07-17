@@ -30,6 +30,9 @@
             e.stopImmediatePropagation();
         }
     });
+    $('form').on('submit', function() {
+        tinymce.EditorManager.triggerSave();
+    });
 
     // Load external plugins
     var externalPlugins = [];
@@ -56,68 +59,73 @@
                 $element.each(function () {
                     var $textarea = $(this);
 
-                    // Get editor's theme from the textarea data
-                    var theme = $textarea.data('theme') || 'simple';
-                    // Get selected theme options
-                    var settings = (typeof config.theme[theme] != 'undefined')
-                        ? config.theme[theme]
-                        : config.theme['simple'];
+                    var editor, id = $textarea.attr('id');
+                    editor = tinymce.get(id);
+                    if (!editor) {
 
-                    settings.external_plugins = settings.external_plugins || {};
-                    for (var p = 0; p < externalPlugins.length; p++) {
-                        settings.external_plugins[externalPlugins[p]['id']] = externalPlugins[p]['url'];
-                    }
+                        // Get editor's theme from the textarea data
+                        var theme = $textarea.data('theme') || 'simple';
+                        // Get selected theme options
+                        var settings = (typeof config.theme[theme] != 'undefined')
+                            ? config.theme[theme]
+                            : config.theme['simple'];
 
-                    // Overwrite config through data-config attribute
-                    var overwrite = $textarea.data('config') || {};
-                    for (var key in overwrite) {
-                        settings[key] = overwrite[key];
-                    }
+                        settings.external_plugins = settings.external_plugins || {};
+                        for (var p = 0; p < externalPlugins.length; p++) {
+                            settings.external_plugins[externalPlugins[p]['id']] = externalPlugins[p]['url'];
+                        }
 
-                    // workaround for an incompatibility with html5-validation
-                    if ($textarea.prop('required')) {
-                        $textarea.prop('required', false);
-                    }
-                    if ($textarea.attr('id') === '') {
-                        $textarea.attr('id', 'tinymce_' + Math.random().toString(36).substr(2));
-                    }
-                    // Add custom buttons to current editor
-                    if (typeof config.tinymce_buttons == 'object') {
-                        settings.setup = function (editor) {
-                            for (var buttonId in config.tinymce_buttons) {
-                                if (!config.tinymce_buttons.hasOwnProperty(buttonId)) continue;
+                        // Overwrite config through data-config attribute
+                        var overwrite = $textarea.data('config') || {};
+                        for (var key in overwrite) {
+                            settings[key] = overwrite[key];
+                        }
 
-                                // Some tricky function to isolate variables values
-                                (function (id, opts) {
-                                    opts.onclick = function () {
-                                        var callback = window['tinymce_button_' + id];
+                        if ($textarea.attr('id') === '') {
+                            $textarea.attr('id', 'tinymce_' + Math.random().toString(36).substr(2));
+                        }
+                        // Add custom buttons to current editor
+                        if (typeof config.tinymce_buttons == 'object') {
+                            settings.setup = function (editor) {
+                                for (var buttonId in config.tinymce_buttons) {
+                                    if (!config.tinymce_buttons.hasOwnProperty(buttonId)) continue;
+
+                                    // Some tricky function to isolate variables values
+                                    (function (id, opts) {
+                                        opts.onclick = function () {
+                                            var callback = window['tinymce_button_' + id];
+                                            if (typeof callback == 'function') {
+                                                callback(editor);
+                                            } else {
+                                                alert('You have to create callback function: "tinymce_button_' + id + '"');
+                                            }
+                                        };
+                                        editor.addButton(id, opts);
+
+                                    })(buttonId, clone(config.tinymce_buttons[buttonId]));
+                                }
+                                //Init Event
+                                editor.on('init', function() {
+                                    if (config.use_callback_tinymce_init) {
+                                        var callback = window['callback_tinymce_init'];
                                         if (typeof callback == 'function') {
                                             callback(editor);
                                         } else {
-                                            alert('You have to create callback function: "tinymce_button_' + id + '"');
+                                            alert('You have to create callback function: callback_tinymce_init');
                                         }
-                                    };
-                                    editor.addButton(id, opts);
-
-                                })(buttonId, clone(config.tinymce_buttons[buttonId]));
+                                    }
+                                    // workaround for an incompatibility with html5-validation
+                                    $(editor.getElement()).prop('required', false);
+                                });
+                                editor.on('blur', function() {
+                                    editor.save();
+                                });
                             }
-                            //Init Event
-                            /*if (config.use_callback_tinymce_init) {
-                             editor.on('init', function() {
-                             var callback = window['callback_tinymce_init'];
-                             if (typeof callback == 'function') {
-                             callback(editor);
-                             } else {
-                             alert('You have to create callback function: callback_tinymce_init');
-                             }
-                             });
-                             }*/
                         }
-                    }
 
-                    // Initialize textarea by ID
-                    var editor, id = $textarea.attr('id');
-                    editor = new tinymce.Editor(id, settings, tinymce.EditorManager);
+                        // Initialize textarea by ID
+                        editor = new tinymce.Editor(id, settings, tinymce.EditorManager);
+                    }
                     editor.render();
                 });
             }, 150);
