@@ -142,6 +142,13 @@
             $element.each(function() {
                 var editor = tinymce.get($(this).attr('id'));
                 if (editor) {
+                    // Save edited images
+                    /*if (editor.settings.hasOwnProperty('images_upload_handler')
+                        && typeof ed.settings.images_upload_handler == 'function') {
+                        ed.editorUpload.uploadImages(function (success) {
+
+                        });
+                    }*/
                     editor.save();
                 }
             });
