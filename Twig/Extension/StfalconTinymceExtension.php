@@ -68,8 +68,8 @@ class StfalconTinymceExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            'tinymce_init' => new \Twig_Function_Method($this, 'tinymceInit', array('is_safe' => array('html'))),
-            'get_tinymce_config' => new \Twig_Function_Method($this, 'getTinymceConfig'),
+            new \Twig_SimpleFunction('tinymce_init', array($this, 'tinymceInit'), array('is_safe' => array('html'))),
+            new \Twig_SimpleFunction('get_tinymce_config', array($this, 'getTinymceConfig')),
         );
     }
 
