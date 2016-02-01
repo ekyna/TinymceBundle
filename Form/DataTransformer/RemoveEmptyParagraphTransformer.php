@@ -25,6 +25,12 @@ class RemoveEmptyParagraphTransformer implements DataTransformerInterface
     public function reverseTransform($html)
     {
         $html = preg_replace('~<p>[&nbsp;|\s]+</p>~', '', $html);
-        return preg_replace('~[\r\n]+~', '', $html);
+        $html = preg_replace('~[\r\n]+~', '', $html);
+
+        if (0 === strlen($html)) {
+            return null;
+        }
+
+        return $html;
     }
 }
