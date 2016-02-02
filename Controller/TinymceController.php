@@ -35,10 +35,14 @@ class TinymceController extends Controller
         $response = new Response($config);
         $response->headers->add(array('Content-Type' => 'application/json'));
 
+        $expires = new \DateTime();
+        $expires->modify('+7 days');
+
         $response
             ->setPublic()
-            ->setMaxAge(3600*6)
-            ->setSharedMaxAge(3600*6)
+            ->setExpires($expires)
+            ->setMaxAge(3600*24*7)
+            ->setSharedMaxAge(3600*24*7)
         ;
 
         return $response;
